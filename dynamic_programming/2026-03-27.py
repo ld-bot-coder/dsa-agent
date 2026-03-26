@@ -1,61 +1,88 @@
 ```python
 """
-Problem: Coin Change (Unlimited Supply)
+Problem: Minimum Path Sum in a Grid
 Difficulty: Medium
+
 Problem Statement:
-Given an integer array `coins` representing coins of different denominations and an integer `amount` representing a total amount of money, return the fewest number of coins that you need to make up that amount. If that amount of money cannot be made up by any combination of the coins, return -1.
+Given a m x n grid filled with non-negative numbers, find a path from top left to bottom right,
+which minimizes the sum of all numbers along its path. You can only move either down or right at any point in time.
 
-You may assume that you have an infinite number of each kind of coin.
-
-Example 1:
-Input: coins = [1, 2, 5], amount = 11
-Output: 3
-Explanation: 5 + 5 + 1 = 11.
-
-Example 2:
-Input: coins = [2], amount = 3
-Output: -1
-
-Example 3:
-Input: coins = [1], amount = 0
-Output: 0
+Example:
+Input: grid = [
+  [1, 3, 1],
+  [1, 5, 1],
+  [4, 2, 1]
+]
+Output: 7
+Explanation: The path 1 → 3 → 1 → 1 → 1 minimizes the sum.
 
 Approach:
-This problem is solved using Dynamic Programming (DP) with a bottom-up approach. The idea is to build a DP array where `dp[i]` represents the minimum number of coins needed to make the amount `i`. Initialize the DP array with a value larger than the maximum possible (e.g., `amount + 1`) to signify that the amount is initially unreachable. The base case is `dp[0] = 0` because zero coins are needed to make amount 0.
-
-For each coin, iterate through all amounts from the coin's value up to the target amount. For each amount `i`, update `dp[i]` to be the minimum of its current value or `dp[i - coin] + 1`.
-
-Time Complexity: O(amount * n), where n is the number of coins.
-Space Complexity: O(amount), for the DP array.
+This problem is solved using Dynamic Programming (DP) with a 2D DP table.
+The DP table dp[i][j] represents the minimum path sum to reach cell (i, j).
+The recurrence relation is:
+- dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]) for i > 0 and j > 0.
+- For the first row or column, the path can only come from one direction.
+Time Complexity: O(m * n), where m and n are the grid dimensions.
+Space Complexity: O(m * n), which can be optimized to O(n) by using a 1D array.
 """
 
-def coinChange(coins, amount):
+def min_path_sum(grid):
     """
-    Calculate the fewest number of coins needed to make up the given amount.
+    Calculate the minimum path sum from the top-left to the bottom-right of a grid.
 
     Args:
-        coins (List[int]): List of coin denominations.
-        amount (int): Target amount to achieve.
+        grid (List[List[int]]): A 2D grid of non-negative integers.
 
     Returns:
-        int: Minimum number of coins needed, or -1 if not possible.
+        int: The minimum path sum.
     """
-    # Initialize DP array with a value larger than the maximum possible (amount + 1)
-    dp = [amount + 1] * (amount + 1)
-    dp[0] = 0  # Base case: 0 coins needed for amount 0
+    if not grid or not grid[0]:
+        return 0
 
-    for coin in coins:
-        for i in range(coin, amount + 1):
-            dp[i] = min(dp[i], dp[i - coin] + 1)
+    m, n = len(grid), len(grid[0])
+    dp = [[0] * n for _ in range(m)]
+    dp[0][0] = grid[0][0]
 
-    return dp[amount] if dp[amount] != amount + 1 else -1
+    # Initialize first row: can only come from the left
+    for j in range(1, n):
+        dp[0][j] = dp[0][j-1] + grid[0][j]
+
+    # Initialize first column: can only come from above
+    for i in range(1, m):
+        dp[i][0] = dp[i-1][0] + grid[i][0]
+
+    # Fill the rest of the DP table
+    for i in range(1, m):
+        for j in range(1, n):
+            dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])
+
+    return dp[m-1][n-1]
 
 if __name__ == "__main__":
     # Test cases
-    assert coinChange([1, 2, 5], 11) == 3
-    assert coinChange([2], 3) == -1
-    assert coinChange([1], 0) == 0
-    assert coinChange([1, 3, 4], 6) == 2
-    assert coinChange([2, 5, 10, 1], 27) == 4
-    print("All test cases pass")
+    grid1 = [
+        [1, 3, 1],
+        [1, 5, 1],
+        [4, 2, 1]
+    ]
+    assert min_path_sum(grid1) == 7
+
+    grid2 = [
+        [1, 2, 3],
+        [4, 5, 6]
+    ]
+    assert min_path_sum(grid2) == 12
+
+    grid3 = [
+        [1]
+    ]
+    assert min_path_sum(grid3) == 1
+
+    grid4 = [
+        [1, 2],
+        [3, 4]
+    ]
+    assert min_path_sum(grid4) == 5
+
+    print("All tests passed!")
 ```
