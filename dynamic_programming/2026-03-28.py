@@ -1,86 +1,69 @@
 """
-Problem: Minimum Path Sum in a Grid
+Problem: Maximum Sum of Non-Adjacent Elements with Limited Selection
 Difficulty: Medium
 
 Problem Statement:
-Given a m x n grid filled with non-negative numbers, find a path from top left to bottom right,
-which minimizes the sum of all numbers along its path. You can only move either down or right at any point in time.
+Given an array of integers, find the maximum sum of a subset of non-adjacent elements where you can select at most `k` elements.
+If `k` is 0, the sum is 0. If the array is empty, the sum is 0.
 
-Example:
-Input: grid = [
-  [1, 3, 1],
-  [1, 5, 1],
-  [4, 2, 1]
-]
-Output: 7
-Explanation: The path 1 → 3 → 1 → 1 → 1 minimizes the sum.
+Examples:
+1. Input: nums = [3, 2, 5, 10, 7], k = 2
+   Output: 15 (select 3 and 10 or 5 and 10)
+2. Input: nums = [3, 2, 5, 10, 7], k = 3
+   Output: 18 (select 3, 5, and 10)
+3. Input: nums = [1, 2, 3, 4, 5], k = 1
+   Output: 5 (select 5)
 
 Approach:
-This problem is solved using Dynamic Programming (DP) with a 2D DP table.
-The DP table dp[i][j] represents the minimum path sum to reach cell (i, j).
-The recurrence relation is:
-- dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]) for i > 0 and j > 0.
-- For the first row and first column, the path can only come from one direction.
-Time Complexity: O(m * n), where m and n are the dimensions of the grid.
-Space Complexity: O(m * n), which can be optimized to O(n) by using a 1D array.
+This problem is solved using Dynamic Programming with a 2D DP table where:
+- dp[i][j] represents the maximum sum achievable up to the i-th element with j selections.
+- The recurrence relation is:
+  - If we skip the i-th element: dp[i][j] = dp[i-1][j]
+  - If we take the i-th element: dp[i][j] = dp[i-2][j-1] + nums[i] (if i >= 2 and j >= 1)
+- Time Complexity: O(n * k), where n is the number of elements in the array.
+- Space Complexity: O(n * k), optimized to O(k) by reusing rows.
 """
 
-def min_path_sum(grid):
+def max_sum_non_adjacent_with_k(nums, k):
     """
-    Calculate the minimum path sum from the top-left to the bottom-right of a grid.
+    Find the maximum sum of non-adjacent elements with at most k selections.
 
     Args:
-        grid (List[List[int]]): A 2D list of non-negative integers.
+        nums: List of integers.
+        k: Maximum number of elements to select.
 
     Returns:
-        int: The minimum path sum.
+        Maximum sum achievable.
     """
-    if not grid or not grid[0]:
+    n = len(nums)
+    if n == 0 or k == 0:
         return 0
 
-    m, n = len(grid), len(grid[0])
-    dp = [[0] * n for _ in range(m)]
-    dp[0][0] = grid[0][0]
+    # Initialize DP table: dp[j] represents the maximum sum with j selections up to the current element.
+    dp_prev = [0] * (k + 1)  # Represents dp[i-2][j]
+    dp_current = [0] * (k + 1)  # Represents dp[i-1][j]
 
-    # Initialize the first column
-    for i in range(1, m):
-        dp[i][0] = dp[i-1][0] + grid[i][0]
+    for i in range(n):
+        for j in range(k, 0, -1):  # Iterate backwards to avoid overwriting
+            if i >= 1:
+                # Option 1: Skip the current element
+                skip = dp_current[j]
+                # Option 2: Take the current element (if possible)
+                take = 0
+                if i >= 1:
+                    take = dp_prev[j - 1] + nums[i]
+                dp_current[j] = max(skip, take)
+        # Update dp_prev for the next iteration
+        dp_prev = dp_current.copy()
 
-    # Initialize the first row
-    for j in range(1, n):
-        dp[0][j] = dp[0][j-1] + grid[0][j]
-
-    # Fill the DP table
-    for i in range(1, m):
-        for j in range(1, n):
-            dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])
-
-    return dp[m-1][n-1]
+    return dp_current[k]
 
 if __name__ == "__main__":
     # Test cases
-    grid1 = [
-        [1, 3, 1],
-        [1, 5, 1],
-        [4, 2, 1]
-    ]
-    assert min_path_sum(grid1) == 7
-
-    grid2 = [
-        [1, 2, 3],
-        [4, 5, 6]
-    ]
-    assert min_path_sum(grid2) == 12
-
-    grid3 = [
-        [1, 2],
-        [1, 1]
-    ]
-    assert min_path_sum(grid3) == 3
-
-    grid4 = [
-        [1]
-    ]
-    assert min_path_sum(grid4) == 1
-
-    print("All test cases pass")
+    assert max_sum_non_adjacent_with_k([3, 2, 5, 10, 7], 2) == 15
+    assert max_sum_non_adjacent_with_k([3, 2, 5, 10, 7], 3) == 18
+    assert max_sum_non_adjacent_with_k([1, 2, 3, 4, 5], 1) == 5
+    assert max_sum_non_adjacent_with_k([1, 2, 3, 4, 5], 0) == 0
+    assert max_sum_non_adjacent_with_k([], 2) == 0
+    assert max_sum_non_adjacent_with_k([5, 1, 2, 3, 4], 2) == 8
+    print("All tests passed!")
