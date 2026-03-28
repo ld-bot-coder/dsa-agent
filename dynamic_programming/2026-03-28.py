@@ -1,9 +1,10 @@
+```python
 """
 Problem: Minimum Path Sum in a Grid
 Difficulty: Medium
-
 Problem Statement:
-Given a grid filled with non-negative numbers, find a path from the top-left to the bottom-right corner which minimizes the sum of all numbers along its path. You can only move either down or right at any point in time.
+Given a m x n grid filled with non-negative numbers, find a path from top left to bottom right,
+which minimizes the sum of all numbers along its path. You can only move either down or right at any point in time.
 
 Example:
 Input: grid = [
@@ -16,13 +17,17 @@ Explanation: The path 1 → 3 → 1 → 1 → 1 minimizes the sum.
 
 Approach:
 This problem is solved using Dynamic Programming (DP) with a 2D DP table.
-- Time Complexity: O(m * n), where m and n are the grid dimensions.
-- Space Complexity: O(m * n), which can be optimized to O(n) by reusing a 1D array.
+The DP table dp[i][j] represents the minimum path sum to reach cell (i, j).
+The recurrence relation is:
+- dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]) for i > 0 and j > 0.
+- For the first row or column, the path can only come from one direction.
+Time Complexity: O(m * n), where m and n are the grid dimensions.
+Space Complexity: O(m * n), which can be optimized to O(n) by using a 1D array.
 """
 
 def min_path_sum(grid):
     """
-    Calculate the minimum path sum from the top-left to the bottom-right of a grid.
+    Calculate the minimum path sum from top-left to bottom-right in a grid.
 
     Args:
         grid (List[List[int]]): A 2D list of non-negative integers.
@@ -39,18 +44,18 @@ def min_path_sum(grid):
 
     # Initialize first row: can only come from the left
     for j in range(1, n):
-        dp[0][j] = dp[0][j - 1] + grid[0][j]
+        dp[0][j] = dp[0][j-1] + grid[0][j]
 
     # Initialize first column: can only come from above
     for i in range(1, m):
-        dp[i][0] = dp[i - 1][0] + grid[i][0]
+        dp[i][0] = dp[i-1][0] + grid[i][0]
 
     # Fill the rest of the DP table
     for i in range(1, m):
         for j in range(1, n):
-            dp[i][j] = min(dp[i - 1][j], dp[i][j - 1]) + grid[i][j]
+            dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])
 
-    return dp[m - 1][n - 1]
+    return dp[m-1][n-1]
 
 if __name__ == "__main__":
     # Test cases
@@ -68,14 +73,15 @@ if __name__ == "__main__":
     assert min_path_sum(grid2) == 12
 
     grid3 = [
-        [1, 2],
-        [1, 1]
+        [1]
     ]
-    assert min_path_sum(grid3) == 3
+    assert min_path_sum(grid3) == 1
 
     grid4 = [
-        [0]
+        [1, 2],
+        [3, 4]
     ]
-    assert min_path_sum(grid4) == 0
+    assert min_path_sum(grid4) == 5
 
-    print("All test cases passed!")
+    print("All tests passed!")
+```
